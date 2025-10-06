@@ -405,6 +405,13 @@
 <body>
     <div class="container">
         <div class="controls">
+            <!-- Einstellungen -->
+            <button onclick="editor.openSettingsModal()" title="Einstellungen">
+                <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+            </button>
+
+            <div class="button-separator"></div>
+
             <!-- Modi -->
             <button onclick="editor.openAddSeatsModal()" class="btn-success" title="Plätze hinzufügen">
                 <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -497,6 +504,39 @@
 
     <div class="mode-indicator" id="modeIndicator">Modus: Info</div>
 
+    <!-- Modal für Einstellungen -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Einstellungen</h3>
+                <button class="modal-close" onclick="editor.closeSettingsModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Canvas Breite (px)</label>
+                <input type="number" id="canvasWidth" value="1200" min="800" max="3000" />
+            </div>
+            <div class="form-group">
+                <label>Canvas Höhe (px)</label>
+                <input type="number" id="canvasHeight" value="800" min="600" max="2000" />
+            </div>
+            <div class="form-group">
+                <label>Platzgröße (px)</label>
+                <input type="number" id="defaultSeatSize" value="30" min="10" max="100" />
+            </div>
+            <div class="form-group">
+                <label>Platzform</label>
+                <select id="defaultSeatShape">
+                    <option value="circle">Rund</option>
+                    <option value="square">Eckig</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button onclick="editor.closeSettingsModal()" class="btn-secondary">Abbrechen</button>
+                <button onclick="editor.applySettings()" class="btn-success">Übernehmen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal für Plätze hinzufügen -->
     <div id="addSeatsModal" class="modal">
         <div class="modal-content">
@@ -507,17 +547,6 @@
             <div class="form-group">
                 <label>Block</label>
                 <input type="text" id="blockName" value="Block A" />
-            </div>
-            <div class="form-group">
-                <label>Platzgröße (px)</label>
-                <input type="number" id="seatSize" value="30" min="10" max="100" />
-            </div>
-            <div class="form-group">
-                <label>Platzform</label>
-                <select id="seatShape">
-                    <option value="circle">Rund</option>
-                    <option value="square">Eckig</option>
-                </select>
             </div>
             <div class="form-group">
                 <label>Startnummer Reihe</label>
@@ -597,6 +626,14 @@
                 this.dragOffset = { x: 0, y: 0 };
                 this.backgroundImage = null;
 
+                // Global settings
+                this.settings = {
+                    canvasWidth: 1200,
+                    canvasHeight: 800,
+                    defaultSeatSize: 30,
+                    defaultSeatShape: 'circle'
+                };
+
                 this.priceColors = {
                     '1': '#ff6b6b',
                     '2': '#4ecdc4',
@@ -624,6 +661,12 @@
                         };
                         img.src = savedBg;
                     }
+                    const savedSettings = localStorage.getItem('saalplan_settings');
+                    if (savedSettings) {
+                        this.settings = JSON.parse(savedSettings);
+                        this.canvas.width = this.settings.canvasWidth;
+                        this.canvas.height = this.settings.canvasHeight;
+                    }
                 } catch (error) {
                     console.error('Fehler beim Laden aus LocalStorage:', error);
                 }
@@ -632,6 +675,7 @@
             saveToLocalStorage() {
                 try {
                     localStorage.setItem('saalplan_seats', JSON.stringify(this.seats));
+                    localStorage.setItem('saalplan_settings', JSON.stringify(this.settings));
                     if (this.backgroundImage) {
                         const tempCanvas = document.createElement('canvas');
                         tempCanvas.width = this.backgroundImage.width;
@@ -684,6 +728,57 @@
                     this.isDragging = true;
                     this.dragStart = { x, y };
                 }
+            }
+
+            openSettingsModal() {
+                // Populate current settings
+                document.getElementById('canvasWidth').value = this.settings.canvasWidth;
+                document.getElementById('canvasHeight').value = this.settings.canvasHeight;
+                document.getElementById('defaultSeatSize').value = this.settings.defaultSeatSize;
+                document.getElementById('defaultSeatShape').value = this.settings.defaultSeatShape;
+                document.getElementById('settingsModal').classList.add('active');
+            }
+
+            closeSettingsModal() {
+                const modal = document.getElementById('settingsModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+
+            applySettings() {
+                const newWidth = parseInt(document.getElementById('canvasWidth').value);
+                const newHeight = parseInt(document.getElementById('canvasHeight').value);
+                const newSeatSize = parseInt(document.getElementById('defaultSeatSize').value);
+                const newSeatShape = document.getElementById('defaultSeatShape').value;
+
+                // Save state for undo
+                if (this.seats.length > 0) {
+                    this.saveState();
+                }
+
+                // Update all existing seats with new size and shape
+                this.seats.forEach(seat => {
+                    seat.size = newSeatSize;
+                    seat.shape = newSeatShape;
+                });
+
+                // Update settings
+                this.settings.canvasWidth = newWidth;
+                this.settings.canvasHeight = newHeight;
+                this.settings.defaultSeatSize = newSeatSize;
+                this.settings.defaultSeatShape = newSeatShape;
+
+                // Resize canvas
+                this.canvas.width = newWidth;
+                this.canvas.height = newHeight;
+
+                // Re-render
+                this.render();
+                this.saveToLocalStorage();
+
+                // Close modal
+                this.closeSettingsModal();
             }
 
             openAddSeatsModal() {
@@ -770,8 +865,8 @@
                 const seat1Pos = document.querySelector('input[name="seat1Pos"]:checked').value;
                 const priceCategory = document.getElementById('priceCategory').value;
                 const blockName = document.getElementById('blockName').value;
-                const seatSize = parseInt(document.getElementById('seatSize').value);
-                const seatShape = document.getElementById('seatShape').value;
+                const seatSize = this.settings.defaultSeatSize;
+                const seatShape = this.settings.defaultSeatShape;
 
                 // Calculate boundaries
                 let minX = startX, maxX = startX, minY = startY, maxY = startY;
@@ -838,7 +933,6 @@
             }
 
             toggleSeatSelection(x, y) {
-                const seatSize = parseInt(document.getElementById('seatSize').value);
                 for (let i = 0; i < this.seats.length; i++) {
                     const seat = this.seats[i];
                     const distance = Math.sqrt((seat.x - x) ** 2 + (seat.y - y) ** 2);
