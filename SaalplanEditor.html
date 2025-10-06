@@ -1,0 +1,1283 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saalplan-Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .controls {
+            padding: 10px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .button-separator {
+            width: 1px;
+            height: 24px;
+            background: #ddd;
+            margin: 0 5px;
+        }
+
+        .background-upload {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .background-upload input[type="file"] {
+            font-size: 11px;
+        }
+
+        .background-upload button {
+            width: auto;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="number"],
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 120px;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 32px;
+            height: 32px;
+            padding: 6px;
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        button:hover {
+            background: #f8f9fa;
+            border-color: #999;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        }
+
+        button:disabled {
+            background: #f5f5f5;
+            border-color: #e0e0e0;
+            cursor: not-allowed;
+            opacity: 0.5;
+            transform: none;
+        }
+
+        button:disabled:hover {
+            background: #f5f5f5;
+            border-color: #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transform: none;
+        }
+
+        button svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .btn-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            border-color: #28a745;
+            color: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .workspace {
+            display: flex;
+            height: calc(100vh - 300px);
+            min-height: 600px;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background: #fafafa;
+        }
+
+        #canvas {
+            display: block;
+            cursor: crosshair;
+            background: white;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #f9f9f9;
+            border-left: 1px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .info-box {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .info-value {
+            color: #333;
+        }
+
+        .mode-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .price-categories {
+            margin-top: 20px;
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .color-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 2px solid #333;
+        }
+
+        .lasso {
+            position: absolute;
+            border: 2px dashed #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            pointer-events: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-seats-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .add-seats-panel h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            text-transform: none;
+            font-weight: normal;
+            width: auto;
+        }
+
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .stats {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            width: auto;
+            height: auto;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .modal-footer button {
+            width: auto;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <!-- Modi -->
+            <button onclick="editor.openAddSeatsModal()" class="btn-success" title="Plätze hinzufügen">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+            <button onclick="editor.setMode('select')" class="btn-secondary" title="Plätze auswählen">
+                <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm16 16V5H5v14h14z"/></svg>
+            </button>
+            <button onclick="editor.setMode('info')" title="Info anzeigen">
+                <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2V7zm0 4h2v6h-2v-6zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            </button>
+
+            <div class="button-separator"></div>
+
+            <!-- Bearbeitung -->
+            <button onclick="editor.undo()" id="undoBtn" title="Rückgängig">
+                <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+            </button>
+            <button onclick="editor.clearCanvas()" class="btn-danger" title="Alles löschen">
+                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </button>
+
+            <div class="button-separator"></div>
+
+            <!-- Import/Export -->
+            <button onclick="editor.exportJSON()" class="btn-success" title="Als JSON speichern">
+                <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+            </button>
+            <button onclick="document.getElementById('importFile').click()" class="btn-secondary" title="JSON laden">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            </button>
+            <button onclick="editor.exportPDF()" class="btn-danger" title="Als PDF exportieren">
+                <svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+            </button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="editor.importJSON(event)" />
+
+            <div class="button-separator"></div>
+
+            <!-- Auswahl-Aktionen -->
+            <div id="selectionActions" style="display: none; gap: 5px;">
+                <button onclick="editor.setMode('move')" title="Verschieben">
+                    <svg viewBox="0 0 24 24"><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
+                </button>
+                <button onclick="editor.changeSelectedCategory()" class="btn-success" title="Kategorie ändern">
+                    <svg viewBox="0 0 24 24"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>
+                </button>
+                <button onclick="editor.deleteSelected()" class="btn-danger" title="Löschen">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+
+            <div class="button-separator"></div>
+
+            <!-- Hintergrundbild -->
+            <div class="background-upload">
+                <label style="margin: 0;">Hintergrund:</label>
+                <input type="file" id="backgroundImage" accept="image/*" onchange="editor.loadBackgroundImage(event)" style="width: auto; min-width: 0;" />
+                <button onclick="editor.removeBackgroundImage()" title="Hintergrund entfernen">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="workspace">
+            <div class="canvas-wrapper">
+                <canvas id="canvas" width="1200" height="800"></canvas>
+            </div>
+            <div class="sidebar">
+                <div class="info-box">
+                    <h3>Platz-Information</h3>
+                    <div id="seatInfo">
+                        <p style="color: #999; font-size: 13px;">Klicken Sie auf einen Platz im Info-Modus</p>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <h3>Statistik</h3>
+                    <div class="info-row">
+                        <span class="info-label">Gesamtplätze:</span>
+                        <span class="info-value" id="totalSeats">0</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ausgewählt:</span>
+                        <span class="info-value" id="selectedSeats">0</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="mode-indicator" id="modeIndicator">Modus: Info</div>
+
+    <!-- Modal für Plätze hinzufügen -->
+    <div id="addSeatsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Plätze hinzufügen</h3>
+                <button class="modal-close" onclick="editor.closeAddSeatsModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Block</label>
+                <input type="text" id="blockName" value="Block A" />
+            </div>
+            <div class="form-group">
+                <label>Platzgröße (px)</label>
+                <input type="number" id="seatSize" value="30" min="10" max="100" />
+            </div>
+            <div class="form-group">
+                <label>Platzform</label>
+                <select id="seatShape">
+                    <option value="circle">Rund</option>
+                    <option value="square">Eckig</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Startnummer Reihe</label>
+                <input type="number" id="startRow" value="1" min="1" />
+            </div>
+            <div class="form-group">
+                <label>Anzahl Reihen</label>
+                <input type="number" id="numRows" value="5" min="1" />
+            </div>
+            <div class="form-group">
+                <label>Startnummer Platz</label>
+                <input type="number" id="startSeat" value="1" min="1" />
+            </div>
+            <div class="form-group">
+                <label>Anzahl Plätze pro Reihe</label>
+                <input type="number" id="numSeats" value="10" min="1" />
+            </div>
+            <div class="form-group">
+                <label>Reihenabstand (px)</label>
+                <input type="number" id="rowSpacing" value="50" min="10" />
+            </div>
+            <div class="form-group">
+                <label>Platzabstand (px)</label>
+                <input type="number" id="seatSpacing" value="40" min="10" />
+            </div>
+            <div class="form-group">
+                <label>Reihenstruktur</label>
+                <select id="rowOrientation">
+                    <option value="horizontal">Horizontal</option>
+                    <option value="vertical">Vertikal</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Reihe 1 Position</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="row1Pos" value="top" checked /> Oben</label>
+                    <label><input type="radio" name="row1Pos" value="bottom" /> Unten</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Platz 1 Position</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="seat1Pos" value="left" checked /> Links</label>
+                    <label><input type="radio" name="seat1Pos" value="right" /> Rechts</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Preiskategorie</label>
+                <select id="priceCategory">
+                    <option value="1">Kategorie 1 (Premium)</option>
+                    <option value="2">Kategorie 2 (Standard)</option>
+                    <option value="3">Kategorie 3 (Budget)</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button onclick="editor.closeAddSeatsModal()" class="btn-secondary">Abbrechen</button>
+                <button onclick="editor.confirmAddSeats()" class="btn-success">OK - Platzieren</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        class SeatPlanEditor {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.seats = [];
+                this.selectedSeats = new Set();
+                this.mode = 'info'; // 'add', 'select', 'info', 'move'
+                this.history = [];
+                this.isDrawing = false;
+                this.lassoStart = null;
+                this.lassoEnd = null;
+                this.isDragging = false;
+                this.dragStart = null;
+                this.dragOffset = { x: 0, y: 0 };
+                this.backgroundImage = null;
+
+                this.priceColors = {
+                    '1': '#ff6b6b',
+                    '2': '#4ecdc4',
+                    '3': '#95e1d3'
+                };
+
+                this.loadFromLocalStorage();
+                this.setupEventListeners();
+                this.render();
+                this.updateStats();
+            }
+
+            loadFromLocalStorage() {
+                try {
+                    const saved = localStorage.getItem('saalplan_seats');
+                    if (saved) {
+                        this.seats = JSON.parse(saved);
+                    }
+                    const savedBg = localStorage.getItem('saalplan_background');
+                    if (savedBg) {
+                        const img = new Image();
+                        img.onload = () => {
+                            this.backgroundImage = img;
+                            this.render();
+                        };
+                        img.src = savedBg;
+                    }
+                } catch (error) {
+                    console.error('Fehler beim Laden aus LocalStorage:', error);
+                }
+            }
+
+            saveToLocalStorage() {
+                try {
+                    localStorage.setItem('saalplan_seats', JSON.stringify(this.seats));
+                    if (this.backgroundImage) {
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = this.backgroundImage.width;
+                        tempCanvas.height = this.backgroundImage.height;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(this.backgroundImage, 0, 0);
+                        localStorage.setItem('saalplan_background', tempCanvas.toDataURL());
+                    }
+                } catch (error) {
+                    console.error('Fehler beim Speichern in LocalStorage:', error);
+                }
+            }
+
+            setupEventListeners() {
+                this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+                this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+                this.canvas.addEventListener('click', this.handleClick.bind(this));
+                document.addEventListener('keydown', this.handleKeyDown.bind(this));
+            }
+
+            handleKeyDown(e) {
+                // Return/Enter: Verschiebe-Modus beenden
+                if (e.key === 'Enter' && this.mode === 'move') {
+                    this.selectedSeats.clear();
+                    this.setMode('info');
+                }
+                // ESC: Auswahl aufheben und zurück zum Info-Modus
+                else if (e.key === 'Escape') {
+                    if (this.mode === 'select' || this.mode === 'move') {
+                        this.selectedSeats.clear();
+                        this.setMode('info');
+                    }
+                }
+            }
+
+            handleMouseDown(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                if (this.mode === 'add') {
+                    this.addSeatsAtPosition(x, y);
+                    this.setMode('info');
+                } else if (this.mode === 'select') {
+                    this.isDrawing = true;
+                    this.lassoStart = { x, y };
+                    this.lassoEnd = { x, y };
+                } else if (this.mode === 'move' && this.selectedSeats.size > 0) {
+                    this.isDragging = true;
+                    this.dragStart = { x, y };
+                }
+            }
+
+            openAddSeatsModal() {
+                document.getElementById('addSeatsModal').classList.add('active');
+            }
+
+            closeAddSeatsModal() {
+                const modal = document.getElementById('addSeatsModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+                if (this.mode === 'add') {
+                    this.setMode('info');
+                }
+            }
+
+            confirmAddSeats() {
+                this.setMode('add');
+                const modal = document.getElementById('addSeatsModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+
+            handleMouseMove(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                if (this.mode === 'select' && this.isDrawing) {
+                    this.lassoEnd = { x, y };
+                    this.render();
+                } else if (this.mode === 'move' && this.isDragging) {
+                    const dx = x - this.dragStart.x;
+                    const dy = y - this.dragStart.y;
+
+                    this.selectedSeats.forEach(index => {
+                        this.seats[index].x += dx;
+                        this.seats[index].y += dy;
+                    });
+
+                    this.dragStart = { x, y };
+                    this.render();
+                    this.saveToLocalStorage();
+                }
+            }
+
+            handleMouseUp(e) {
+                if (this.mode === 'select' && this.isDrawing) {
+                    this.isDrawing = false;
+                    this.selectSeatsInLasso();
+                    this.lassoStart = null;
+                    this.lassoEnd = null;
+                    this.render();
+                } else if (this.mode === 'move' && this.isDragging) {
+                    this.isDragging = false;
+                    this.dragStart = null;
+                }
+            }
+
+            handleClick(e) {
+                if (this.mode === 'info') {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.showSeatInfo(x, y);
+                } else if (this.mode === 'select') {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.toggleSeatSelection(x, y);
+                }
+            }
+
+            addSeatsAtPosition(startX, startY) {
+                const startRowNum = parseInt(document.getElementById('startRow').value);
+                const startSeatNum = parseInt(document.getElementById('startSeat').value);
+                const numRows = parseInt(document.getElementById('numRows').value);
+                const numSeats = parseInt(document.getElementById('numSeats').value);
+                const rowSpacing = parseInt(document.getElementById('rowSpacing').value);
+                const seatSpacing = parseInt(document.getElementById('seatSpacing').value);
+                const orientation = document.getElementById('rowOrientation').value;
+                const row1Pos = document.querySelector('input[name="row1Pos"]:checked').value;
+                const seat1Pos = document.querySelector('input[name="seat1Pos"]:checked').value;
+                const priceCategory = document.getElementById('priceCategory').value;
+                const blockName = document.getElementById('blockName').value;
+                const seatSize = parseInt(document.getElementById('seatSize').value);
+                const seatShape = document.getElementById('seatShape').value;
+
+                // Calculate boundaries
+                let minX = startX, maxX = startX, minY = startY, maxY = startY;
+
+                if (orientation === 'horizontal') {
+                    maxX = startX + (numSeats - 1) * seatSpacing + seatSize / 2;
+                    minX = startX - seatSize / 2;
+                    maxY = startY + (numRows - 1) * rowSpacing + seatSize / 2;
+                    minY = startY - seatSize / 2;
+                } else {
+                    maxX = startX + (numRows - 1) * rowSpacing + seatSize / 2;
+                    minX = startX - seatSize / 2;
+                    maxY = startY + (numSeats - 1) * seatSpacing + seatSize / 2;
+                    minY = startY - seatSize / 2;
+                }
+
+                // Check if seats would be outside canvas
+                if (minX < 0 || minY < 0 || maxX > this.canvas.width || maxY > this.canvas.height) {
+                    alert(`Fehler: Die Plätze würden außerhalb der Zeichenfläche (${this.canvas.width}x${this.canvas.height}px) platziert werden.\n\nBitte wählen Sie eine andere Position oder reduzieren Sie die Anzahl der Plätze/Abstände.`);
+                    return;
+                }
+
+                this.saveState();
+
+                for (let row = 0; row < numRows; row++) {
+                    for (let seat = 0; seat < numSeats; seat++) {
+                        let x, y;
+
+                        if (orientation === 'horizontal') {
+                            // Horizontal: Reihen übereinander, Plätze nebeneinander
+                            const rowOffset = (row1Pos === 'top') ? row : (numRows - 1 - row);
+                            const seatOffset = (seat1Pos === 'left') ? seat : (numSeats - 1 - seat);
+
+                            x = startX + seatOffset * seatSpacing;
+                            y = startY + rowOffset * rowSpacing;
+                        } else {
+                            // Vertical: Reihen nebeneinander, Plätze übereinander
+                            const rowOffset = (row1Pos === 'top') ? row : (numRows - 1 - row);
+                            const seatOffset = (seat1Pos === 'left') ? seat : (numSeats - 1 - seat);
+
+                            x = startX + rowOffset * rowSpacing;
+                            y = startY + seatOffset * seatSpacing;
+                        }
+
+                        const actualRow = (row1Pos === 'top' || row1Pos === 'left') ? startRowNum + row : startRowNum + (numRows - 1 - row);
+                        const actualSeat = (seat1Pos === 'left' || seat1Pos === 'top') ? startSeatNum + seat : startSeatNum + (numSeats - 1 - seat);
+
+                        this.seats.push({
+                            x,
+                            y,
+                            block: blockName,
+                            row: actualRow,
+                            seat: actualSeat,
+                            priceCategory,
+                            size: seatSize,
+                            shape: seatShape
+                        });
+                    }
+                }
+
+                this.render();
+                this.updateStats();
+                this.saveToLocalStorage();
+            }
+
+            toggleSeatSelection(x, y) {
+                const seatSize = parseInt(document.getElementById('seatSize').value);
+                for (let i = 0; i < this.seats.length; i++) {
+                    const seat = this.seats[i];
+                    const distance = Math.sqrt((seat.x - x) ** 2 + (seat.y - y) ** 2);
+                    if (distance <= seat.size / 2) {
+                        if (this.selectedSeats.has(i)) {
+                            this.selectedSeats.delete(i);
+                        } else {
+                            this.selectedSeats.add(i);
+                        }
+                        this.render();
+                        this.updateStats();
+                        break;
+                    }
+                }
+            }
+
+            selectSeatsInLasso() {
+                if (!this.lassoStart || !this.lassoEnd) return;
+
+                const minX = Math.min(this.lassoStart.x, this.lassoEnd.x);
+                const maxX = Math.max(this.lassoStart.x, this.lassoEnd.x);
+                const minY = Math.min(this.lassoStart.y, this.lassoEnd.y);
+                const maxY = Math.max(this.lassoStart.y, this.lassoEnd.y);
+
+                this.seats.forEach((seat, index) => {
+                    if (seat.x >= minX && seat.x <= maxX && seat.y >= minY && seat.y <= maxY) {
+                        this.selectedSeats.add(index);
+                    }
+                });
+
+                this.updateStats();
+            }
+
+            showSeatInfo(x, y) {
+                for (const seat of this.seats) {
+                    const distance = Math.sqrt((seat.x - x) ** 2 + (seat.y - y) ** 2);
+                    if (distance <= seat.size / 2) {
+                        const infoDiv = document.getElementById('seatInfo');
+                        infoDiv.innerHTML = `
+                            <div class="info-row">
+                                <span class="info-label">Block:</span>
+                                <span class="info-value">${seat.block}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Reihe:</span>
+                                <span class="info-value">${seat.row}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Platz:</span>
+                                <span class="info-value">${seat.seat}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Preiskategorie:</span>
+                                <span class="info-value">Kategorie ${seat.priceCategory}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Position:</span>
+                                <span class="info-value">X: ${Math.round(seat.x)}, Y: ${Math.round(seat.y)}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Form:</span>
+                                <span class="info-value">${seat.shape === 'circle' ? 'Rund' : 'Eckig'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Größe:</span>
+                                <span class="info-value">${seat.size}px</span>
+                            </div>
+                        `;
+                        break;
+                    }
+                }
+            }
+
+            render() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw background image
+                if (this.backgroundImage) {
+                    this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+                }
+
+                // Draw seats
+                this.seats.forEach((seat, index) => {
+                    const isSelected = this.selectedSeats.has(index);
+
+                    this.ctx.fillStyle = this.priceColors[seat.priceCategory];
+                    this.ctx.strokeStyle = isSelected ? '#333' : '#666';
+                    this.ctx.lineWidth = isSelected ? 3 : 1;
+
+                    if (seat.shape === 'circle') {
+                        this.ctx.beginPath();
+                        this.ctx.arc(seat.x, seat.y, seat.size / 2, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        this.ctx.stroke();
+                    } else {
+                        this.ctx.fillRect(
+                            seat.x - seat.size / 2,
+                            seat.y - seat.size / 2,
+                            seat.size,
+                            seat.size
+                        );
+                        this.ctx.strokeRect(
+                            seat.x - seat.size / 2,
+                            seat.y - seat.size / 2,
+                            seat.size,
+                            seat.size
+                        );
+                    }
+
+                    // Draw seat number
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.font = '10px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(seat.seat, seat.x, seat.y);
+                });
+
+                // Draw row labels AFTER seats so they are always visible
+                this.drawRowLabels();
+
+                // Draw lasso
+                if (this.lassoStart && this.lassoEnd) {
+                    const width = this.lassoEnd.x - this.lassoStart.x;
+                    const height = this.lassoEnd.y - this.lassoStart.y;
+
+                    this.ctx.strokeStyle = '#667eea';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.setLineDash([5, 5]);
+                    this.ctx.strokeRect(this.lassoStart.x, this.lassoStart.y, width, height);
+
+                    this.ctx.fillStyle = 'rgba(102, 126, 234, 0.1)';
+                    this.ctx.fillRect(this.lassoStart.x, this.lassoStart.y, width, height);
+
+                    this.ctx.setLineDash([]);
+                }
+            }
+
+            drawRowLabels() {
+                // Group seats by block and row
+                const blockRows = {};
+                this.seats.forEach(seat => {
+                    const key = `${seat.block}_${seat.row}`;
+                    if (!blockRows[key]) {
+                        blockRows[key] = {
+                            block: seat.block,
+                            row: seat.row,
+                            seats: []
+                        };
+                    }
+                    blockRows[key].seats.push(seat);
+                });
+
+                // Draw labels for each row
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textBaseline = 'middle';
+
+                Object.values(blockRows).forEach(rowData => {
+                    if (rowData.seats.length === 0) return;
+
+                    // Calculate row position - use all seats in the row
+                    const seats = rowData.seats;
+                    const minX = Math.min(...seats.map(s => s.x - s.size / 2));
+                    const maxX = Math.max(...seats.map(s => s.x + s.size / 2));
+                    const avgY = seats.reduce((sum, s) => sum + s.y, 0) / seats.length;
+
+                    const label = `${rowData.row}`;
+
+                    // Draw label on the left with background for better visibility
+                    this.ctx.textAlign = 'right';
+                    const leftX = minX - 10;
+                    if (leftX > 0) {
+                        // Draw semi-transparent background
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        const textWidth = this.ctx.measureText(label).width;
+                        this.ctx.fillRect(leftX - textWidth - 4, avgY - 10, textWidth + 8, 20);
+
+                        // Draw text
+                        this.ctx.fillStyle = '#333';
+                        this.ctx.fillText(label, leftX, avgY);
+                    }
+
+                    // Draw label on the right with background for better visibility
+                    this.ctx.textAlign = 'left';
+                    const rightX = maxX + 10;
+                    if (rightX < this.canvas.width) {
+                        // Draw semi-transparent background
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        const textWidth = this.ctx.measureText(label).width;
+                        this.ctx.fillRect(rightX - 4, avgY - 10, textWidth + 8, 20);
+
+                        // Draw text
+                        this.ctx.fillStyle = '#333';
+                        this.ctx.fillText(label, rightX, avgY);
+                    }
+                });
+            }
+
+            loadBackgroundImage(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.backgroundImage = img;
+                        this.render();
+                        this.saveToLocalStorage();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            removeBackgroundImage() {
+                this.backgroundImage = null;
+                localStorage.removeItem('saalplan_background');
+                this.render();
+            }
+
+            setMode(mode) {
+                this.mode = mode;
+                if (mode !== 'move' && mode !== 'select') {
+                    this.selectedSeats.clear();
+                }
+                const indicator = document.getElementById('modeIndicator');
+                const selectionActions = document.getElementById('selectionActions');
+
+                switch(mode) {
+                    case 'add':
+                        indicator.textContent = 'Modus: Plätze hinzufügen (Klicken Sie auf die gewünschte Position)';
+                        this.canvas.style.cursor = 'crosshair';
+                        selectionActions.style.display = 'none';
+                        break;
+                    case 'select':
+                        indicator.textContent = 'Modus: Plätze auswählen (Lasso ziehen oder einzeln klicken)';
+                        this.canvas.style.cursor = 'pointer';
+                        selectionActions.style.display = 'flex';
+                        break;
+                    case 'move':
+                        indicator.textContent = 'Modus: Plätze verschieben (Ziehen Sie die ausgewählten Plätze)';
+                        this.canvas.style.cursor = 'move';
+                        selectionActions.style.display = 'flex';
+                        break;
+                    case 'info':
+                        indicator.textContent = 'Modus: Info anzeigen (Klicken Sie auf einen Platz)';
+                        this.canvas.style.cursor = 'help';
+                        selectionActions.style.display = 'none';
+                        break;
+                }
+
+                this.render();
+                this.updateStats();
+            }
+
+            changeSelectedCategory() {
+                if (this.selectedSeats.size === 0) {
+                    alert('Bitte wählen Sie zunächst Plätze aus.');
+                    return;
+                }
+
+                // Create modal
+                const modal = document.createElement('div');
+                modal.className = 'modal active';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 400px;">
+                        <div class="modal-header">
+                            <h3>Preiskategorie ändern</h3>
+                            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                        </div>
+                        <div class="form-group">
+                            <label>Neue Preiskategorie</label>
+                            <select id="newPriceCategory" style="width: 100%;">
+                                <option value="1">Kategorie 1 (Premium)</option>
+                                <option value="2">Kategorie 2 (Standard)</option>
+                                <option value="3">Kategorie 3 (Budget)</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button onclick="this.closest('.modal').remove()" class="btn-secondary">Abbrechen</button>
+                            <button onclick="editor.applyCategoryChange()" class="btn-success">Übernehmen</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            applyCategoryChange() {
+                const newCategory = document.getElementById('newPriceCategory').value;
+                this.saveState();
+                this.selectedSeats.forEach(index => {
+                    this.seats[index].priceCategory = newCategory;
+                });
+                this.render();
+                this.saveToLocalStorage();
+
+                // Close modal
+                const modal = document.querySelector('.modal.active');
+                if (modal) modal.remove();
+            }
+
+            deleteSelected() {
+                if (this.selectedSeats.size === 0) {
+                    alert('Bitte wählen Sie zunächst Plätze aus.');
+                    return;
+                }
+
+                if (confirm(`Möchten Sie ${this.selectedSeats.size} Plätze löschen?`)) {
+                    this.saveState();
+                    const indicesToDelete = Array.from(this.selectedSeats).sort((a, b) => b - a);
+                    indicesToDelete.forEach(index => {
+                        this.seats.splice(index, 1);
+                    });
+                    this.selectedSeats.clear();
+                    this.render();
+                    this.updateStats();
+                    this.saveToLocalStorage();
+                }
+            }
+
+            saveState() {
+                this.history.push(JSON.parse(JSON.stringify(this.seats)));
+                if (this.history.length > 50) {
+                    this.history.shift();
+                }
+                document.getElementById('undoBtn').disabled = false;
+            }
+
+            undo() {
+                if (this.history.length > 0) {
+                    this.seats = this.history.pop();
+                    this.selectedSeats.clear();
+                    this.render();
+                    this.updateStats();
+                    this.saveToLocalStorage();
+
+                    if (this.history.length === 0) {
+                        document.getElementById('undoBtn').disabled = true;
+                    }
+                }
+            }
+
+            updateStats() {
+                document.getElementById('totalSeats').textContent = this.seats.length;
+                document.getElementById('selectedSeats').textContent = this.selectedSeats.size;
+            }
+
+            exportJSON() {
+                const data = {
+                    seats: this.seats,
+                    metadata: {
+                        created: new Date().toISOString(),
+                        totalSeats: this.seats.length
+                    }
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `saalplan_${new Date().getTime()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            importJSON(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.seats && Array.isArray(data.seats)) {
+                            this.saveState();
+                            this.seats = data.seats;
+                            this.selectedSeats.clear();
+                            this.render();
+                            this.updateStats();
+                            this.saveToLocalStorage();
+                            alert('Saalplan erfolgreich geladen!');
+                        } else {
+                            alert('Ungültiges Dateiformat!');
+                        }
+                    } catch (error) {
+                        alert('Fehler beim Laden der Datei: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            exportPDF() {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'px',
+                    format: [this.canvas.width, this.canvas.height]
+                });
+
+                // Add canvas to PDF
+                const imgData = this.canvas.toDataURL('image/png');
+                pdf.addImage(imgData, 'PNG', 0, 0, this.canvas.width, this.canvas.height);
+
+                // Add legend
+                pdf.setFontSize(12);
+                pdf.text('Saalplan - Legende', 20, this.canvas.height - 60);
+                
+                const categories = [
+                    { cat: '1', color: '#ff6b6b', name: 'Kategorie 1 (Premium)' },
+                    { cat: '2', color: '#4ecdc4', name: 'Kategorie 2 (Standard)' },
+                    { cat: '3', color: '#95e1d3', name: 'Kategorie 3 (Budget)' }
+                ];
+
+                categories.forEach((item, index) => {
+                    pdf.setFillColor(item.color);
+                    pdf.rect(20, this.canvas.height - 40 + (index * 15), 10, 10, 'F');
+                    pdf.text(item.name, 35, this.canvas.height - 32 + (index * 15));
+                });
+
+                pdf.save(`saalplan_${new Date().getTime()}.pdf`);
+            }
+
+            clearCanvas() {
+                if (this.seats.length === 0) return;
+
+                if (confirm('Möchten Sie wirklich alle Plätze löschen?')) {
+                    this.saveState();
+                    this.seats = [];
+                    this.selectedSeats.clear();
+                    this.render();
+                    this.updateStats();
+                    this.saveToLocalStorage();
+                }
+            }
+        }
+
+        // Initialize editor
+        const editor = new SeatPlanEditor();
+    </script>
+</body>
+</html>
