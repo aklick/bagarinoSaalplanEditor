@@ -233,15 +233,15 @@
         }
 
         .mode-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
+            position: relative;
             background: #333;
             color: white;
             padding: 10px 20px;
             border-radius: 4px;
             font-size: 12px;
-            z-index: 1000;
+            text-align: center;
+            margin: 10px auto 0;
+            max-width: fit-content;
         }
 
         .price-categories {
@@ -454,6 +454,12 @@
                 <button onclick="editor.setMode('move')" title="Verschieben">
                     <svg viewBox="0 0 24 24"><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
                 </button>
+                <button onclick="editor.rotateSelected(90)" title="90° nach rechts drehen">
+                    <svg viewBox="0 0 24 24"><path d="M15.55 5.55L11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11c-.17-1.39-.72-2.73-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42l1.42 1.41c.9-1.16 1.45-2.5 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/></svg>
+                </button>
+                <button onclick="editor.rotateSelected(-90)" title="90° nach links drehen">
+                    <svg viewBox="0 0 24 24"><path d="M8.45 5.55L13 1v3.07c3.94.49 7 3.85 7 7.93s-3.06 7.44-7 7.93v-2.02c2.84-.48 5-2.94 5-5.91s-2.16-5.43-5-5.91V10L8.45 5.55zM4.07 11c.17-1.39.72-2.73 1.62-3.89l1.42 1.42C6.57 9.28 6.23 10.13 6.09 11H4.07zM11 17.9v2.02c-1.39-.17-2.74-.71-3.9-1.61l1.44-1.44c.75.54 1.59.89 2.46 1.03zM7.11 15.48l-1.42 1.41c-.9-1.16-1.45-2.5-1.62-3.89h2.02c.14.87.48 1.72 1.02 2.48z"/></svg>
+                </button>
                 <button onclick="editor.changeSelectedCategory()" class="btn-success" title="Kategorie ändern">
                     <svg viewBox="0 0 24 24"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>
                 </button>
@@ -500,9 +506,8 @@
 
             </div>
         </div>
+        <div class="mode-indicator" id="modeIndicator">Modus: Info</div>
     </div>
-
-    <div class="mode-indicator" id="modeIndicator">Modus: Info</div>
 
     <!-- Modal für Einstellungen -->
     <div id="settingsModal" class="modal">
@@ -1097,36 +1102,74 @@
                     const seats = rowData.seats;
                     const minX = Math.min(...seats.map(s => s.x - s.size / 2));
                     const maxX = Math.max(...seats.map(s => s.x + s.size / 2));
+                    const minY = Math.min(...seats.map(s => s.y - s.size / 2));
+                    const maxY = Math.max(...seats.map(s => s.y + s.size / 2));
+                    const avgX = seats.reduce((sum, s) => sum + s.x, 0) / seats.length;
                     const avgY = seats.reduce((sum, s) => sum + s.y, 0) / seats.length;
+
+                    // Determine orientation: horizontal if width > height
+                    const width = maxX - minX;
+                    const height = maxY - minY;
+                    const isHorizontal = width > height;
 
                     const label = `${rowData.row}`;
 
-                    // Draw label on the left with background for better visibility
-                    this.ctx.textAlign = 'right';
-                    const leftX = minX - 10;
-                    if (leftX > 0) {
-                        // Draw semi-transparent background
-                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                        const textWidth = this.ctx.measureText(label).width;
-                        this.ctx.fillRect(leftX - textWidth - 4, avgY - 10, textWidth + 8, 20);
+                    if (isHorizontal) {
+                        // Horizontal orientation: labels left and right
+                        this.ctx.textAlign = 'right';
+                        const leftX = minX - 10;
+                        if (leftX > 0) {
+                            // Draw semi-transparent background
+                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                            const textWidth = this.ctx.measureText(label).width;
+                            this.ctx.fillRect(leftX - textWidth - 4, avgY - 10, textWidth + 8, 20);
 
-                        // Draw text
-                        this.ctx.fillStyle = '#333';
-                        this.ctx.fillText(label, leftX, avgY);
-                    }
+                            // Draw text
+                            this.ctx.fillStyle = '#333';
+                            this.ctx.fillText(label, leftX, avgY);
+                        }
 
-                    // Draw label on the right with background for better visibility
-                    this.ctx.textAlign = 'left';
-                    const rightX = maxX + 10;
-                    if (rightX < this.canvas.width) {
-                        // Draw semi-transparent background
-                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                        const textWidth = this.ctx.measureText(label).width;
-                        this.ctx.fillRect(rightX - 4, avgY - 10, textWidth + 8, 20);
+                        this.ctx.textAlign = 'left';
+                        const rightX = maxX + 10;
+                        if (rightX < this.canvas.width) {
+                            // Draw semi-transparent background
+                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                            const textWidth = this.ctx.measureText(label).width;
+                            this.ctx.fillRect(rightX - 4, avgY - 10, textWidth + 8, 20);
 
-                        // Draw text
-                        this.ctx.fillStyle = '#333';
-                        this.ctx.fillText(label, rightX, avgY);
+                            // Draw text
+                            this.ctx.fillStyle = '#333';
+                            this.ctx.fillText(label, rightX, avgY);
+                        }
+                    } else {
+                        // Vertical orientation: labels top and bottom
+                        this.ctx.textAlign = 'center';
+
+                        // Draw label on top
+                        const topY = minY - 10;
+                        if (topY > 15) {
+                            // Draw semi-transparent background
+                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                            const textWidth = this.ctx.measureText(label).width;
+                            this.ctx.fillRect(avgX - textWidth / 2 - 4, topY - 10, textWidth + 8, 20);
+
+                            // Draw text
+                            this.ctx.fillStyle = '#333';
+                            this.ctx.fillText(label, avgX, topY);
+                        }
+
+                        // Draw label on bottom
+                        const bottomY = maxY + 10;
+                        if (bottomY < this.canvas.height - 5) {
+                            // Draw semi-transparent background
+                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                            const textWidth = this.ctx.measureText(label).width;
+                            this.ctx.fillRect(avgX - textWidth / 2 - 4, bottomY - 10, textWidth + 8, 20);
+
+                            // Draw text
+                            this.ctx.fillStyle = '#333';
+                            this.ctx.fillText(label, avgX, bottomY);
+                        }
                     }
                 });
             }
@@ -1187,6 +1230,45 @@
 
                 this.render();
                 this.updateStats();
+            }
+
+            rotateSelected(angle) {
+                if (this.selectedSeats.size === 0) {
+                    alert('Bitte wählen Sie zunächst Plätze aus.');
+                    return;
+                }
+
+                this.saveState();
+
+                // Calculate center point of selection
+                const selectedIndices = Array.from(this.selectedSeats);
+                const centerX = selectedIndices.reduce((sum, i) => sum + this.seats[i].x, 0) / selectedIndices.length;
+                const centerY = selectedIndices.reduce((sum, i) => sum + this.seats[i].y, 0) / selectedIndices.length;
+
+                // Convert angle to radians
+                const rad = (angle * Math.PI) / 180;
+                const cos = Math.cos(rad);
+                const sin = Math.sin(rad);
+
+                // Rotate each selected seat around the center point
+                selectedIndices.forEach(index => {
+                    const seat = this.seats[index];
+
+                    // Translate to origin
+                    const dx = seat.x - centerX;
+                    const dy = seat.y - centerY;
+
+                    // Rotate
+                    const rotatedX = dx * cos - dy * sin;
+                    const rotatedY = dx * sin + dy * cos;
+
+                    // Translate back
+                    seat.x = centerX + rotatedX;
+                    seat.y = centerY + rotatedY;
+                });
+
+                this.render();
+                this.saveToLocalStorage();
             }
 
             changeSelectedCategory() {
