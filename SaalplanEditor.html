@@ -425,6 +425,29 @@
 
             <div class="button-separator"></div>
 
+            <!-- Zeichnen -->
+            <button onclick="editor.setDrawMode('rect')" title="Rechteck zeichnen">
+                <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm16 16V5H5v14h14z"/></svg>
+            </button>
+            <button onclick="editor.setDrawMode('circle')" title="Kreis zeichnen">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            </button>
+            <button onclick="editor.setDrawMode('line')" title="Linie zeichnen">
+                <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </button>
+            <button onclick="editor.setDrawMode('triangle')" title="Dreieck zeichnen">
+                <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99z"/></svg>
+            </button>
+            <input type="color" id="shapeColor" value="#3498db" title="Zeichenfarbe" style="width: 32px; height: 32px; padding: 2px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">
+            <button id="fillModeBtn" onclick="editor.toggleFillMode()" title="Füllung umschalten">
+                <svg viewBox="0 0 24 24"><path d="M16.56 8.94L7.62 0 6.21 1.41l2.38 2.38-5.15 5.15c-.59.59-.59 1.54 0 2.12l5.5 5.5c.29.29.68.44 1.06.44s.77-.15 1.06-.44l5.5-5.5c.59-.58.59-1.53 0-2.12zM5.21 10L10 5.21 14.79 10H5.21zM19 11.5s-2 2.17-2 3.5c0 1.1.9 2 2 2s2-.9 2-2c0-1.33-2-3.5-2-3.5z"/></svg>
+            </button>
+            <button onclick="editor.deleteSelectedShape()" class="btn-danger" title="Form löschen">
+                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </button>
+
+            <div class="button-separator"></div>
+
             <!-- Bearbeitung -->
             <button onclick="editor.undo()" id="undoBtn" title="Rückgängig">
                 <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
@@ -454,11 +477,8 @@
                 <button onclick="editor.setMode('move')" title="Verschieben">
                     <svg viewBox="0 0 24 24"><path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/></svg>
                 </button>
-                <button onclick="editor.rotateSelected(90)" title="90° nach rechts drehen">
+                <button onclick="editor.openRotateModal()" title="Drehen">
                     <svg viewBox="0 0 24 24"><path d="M15.55 5.55L11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11c-.17-1.39-.72-2.73-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42l1.42 1.41c.9-1.16 1.45-2.5 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z"/></svg>
-                </button>
-                <button onclick="editor.rotateSelected(-90)" title="90° nach links drehen">
-                    <svg viewBox="0 0 24 24"><path d="M8.45 5.55L13 1v3.07c3.94.49 7 3.85 7 7.93s-3.06 7.44-7 7.93v-2.02c2.84-.48 5-2.94 5-5.91s-2.16-5.43-5-5.91V10L8.45 5.55zM4.07 11c.17-1.39.72-2.73 1.62-3.89l1.42 1.42C6.57 9.28 6.23 10.13 6.09 11H4.07zM11 17.9v2.02c-1.39-.17-2.74-.71-3.9-1.61l1.44-1.44c.75.54 1.59.89 2.46 1.03zM7.11 15.48l-1.42 1.41c-.9-1.16-1.45-2.5-1.62-3.89h2.02c.14.87.48 1.72 1.02 2.48z"/></svg>
                 </button>
                 <button onclick="editor.changeSelectedCategory()" class="btn-success" title="Kategorie ändern">
                     <svg viewBox="0 0 24 24"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>
@@ -507,6 +527,31 @@
             </div>
         </div>
         <div class="mode-indicator" id="modeIndicator">Modus: Info</div>
+    </div>
+
+    <!-- Modal für Rotation -->
+    <div id="rotateModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Plätze drehen</h3>
+                <button class="modal-close" onclick="editor.closeRotateModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Winkel (Grad)</label>
+                <input type="number" id="rotationAngle" value="45" min="-360" max="360" step="1" />
+                <div style="margin-top: 10px; display: flex; gap: 5px; flex-wrap: wrap;">
+                    <button onclick="document.getElementById('rotationAngle').value = '45'" style="width: auto; padding: 5px 10px; font-size: 12px;">45°</button>
+                    <button onclick="document.getElementById('rotationAngle').value = '90'" style="width: auto; padding: 5px 10px; font-size: 12px;">90°</button>
+                    <button onclick="document.getElementById('rotationAngle').value = '180'" style="width: auto; padding: 5px 10px; font-size: 12px;">180°</button>
+                    <button onclick="document.getElementById('rotationAngle').value = '-45'" style="width: auto; padding: 5px 10px; font-size: 12px;">-45°</button>
+                    <button onclick="document.getElementById('rotationAngle').value = '-90'" style="width: auto; padding: 5px 10px; font-size: 12px;">-90°</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="editor.closeRotateModal()" class="btn-secondary">Abbrechen</button>
+                <button onclick="editor.applyRotation()" class="btn-success">Drehen</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal für Einstellungen -->
@@ -571,11 +616,11 @@
             </div>
             <div class="form-group">
                 <label>Reihenabstand (px)</label>
-                <input type="number" id="rowSpacing" value="50" min="10" />
+                <input type="number" id="rowSpacing" value="10" min="0" />
             </div>
             <div class="form-group">
                 <label>Platzabstand (px)</label>
-                <input type="number" id="seatSpacing" value="40" min="10" />
+                <input type="number" id="seatSpacing" value="5" min="0" />
             </div>
             <div class="form-group">
                 <label>Reihenstruktur</label>
@@ -631,6 +676,18 @@
                 this.dragOffset = { x: 0, y: 0 };
                 this.backgroundImage = null;
 
+                // Shape drawing
+                this.shapes = [];
+                this.currentDrawTool = null;
+                this.isDrawingShape = false;
+                this.shapeStartX = 0;
+                this.shapeStartY = 0;
+                this.selectedShape = null;
+                this.isDraggingShape = false;
+                this.shapeDragOffsetX = 0;
+                this.shapeDragOffsetY = 0;
+                this.shapeFillMode = false; // false = outline only, true = filled
+
                 // Global settings
                 this.settings = {
                     canvasWidth: 1200,
@@ -657,6 +714,10 @@
                     if (saved) {
                         this.seats = JSON.parse(saved);
                     }
+                    const savedShapes = localStorage.getItem('saalplan_shapes');
+                    if (savedShapes) {
+                        this.shapes = JSON.parse(savedShapes);
+                    }
                     const savedBg = localStorage.getItem('saalplan_background');
                     if (savedBg) {
                         const img = new Image();
@@ -680,6 +741,7 @@
             saveToLocalStorage() {
                 try {
                     localStorage.setItem('saalplan_seats', JSON.stringify(this.seats));
+                    localStorage.setItem('saalplan_shapes', JSON.stringify(this.shapes));
                     localStorage.setItem('saalplan_settings', JSON.stringify(this.settings));
                     if (this.backgroundImage) {
                         const tempCanvas = document.createElement('canvas');
@@ -722,7 +784,24 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
 
-                if (this.mode === 'add') {
+                if (this.currentDrawTool) {
+                    // Check if clicking on existing shape for selection/dragging
+                    this.selectedShape = null;
+                    for (let i = this.shapes.length - 1; i >= 0; i--) {
+                        if (this.isPointInShape(x, y, this.shapes[i])) {
+                            this.selectedShape = i;
+                            this.isDraggingShape = true;
+                            this.shapeDragOffsetX = x - this.shapes[i].x;
+                            this.shapeDragOffsetY = y - this.shapes[i].y;
+                            this.render();
+                            return;
+                        }
+                    }
+                    // Start drawing new shape
+                    this.isDrawingShape = true;
+                    this.shapeStartX = x;
+                    this.shapeStartY = y;
+                } else if (this.mode === 'add') {
                     this.addSeatsAtPosition(x, y);
                     this.setMode('info');
                 } else if (this.mode === 'select') {
@@ -813,7 +892,14 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
 
-                if (this.mode === 'select' && this.isDrawing) {
+                if (this.isDraggingShape && this.selectedShape !== null) {
+                    this.shapes[this.selectedShape].x = x - this.shapeDragOffsetX;
+                    this.shapes[this.selectedShape].y = y - this.shapeDragOffsetY;
+                    this.render();
+                } else if (this.isDrawingShape) {
+                    this.render();
+                    this.drawShapePreview(this.shapeStartX, this.shapeStartY, x, y);
+                } else if (this.mode === 'select' && this.isDrawing) {
                     this.lassoEnd = { x, y };
                     this.render();
                 } else if (this.mode === 'move' && this.isDragging) {
@@ -832,6 +918,39 @@
             }
 
             handleMouseUp(e) {
+                if (this.isDraggingShape) {
+                    this.isDraggingShape = false;
+                    this.saveToLocalStorage();
+                    return;
+                }
+
+                if (this.isDrawingShape) {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const endX = e.clientX - rect.left;
+                    const endY = e.clientY - rect.top;
+
+                    const width = endX - this.shapeStartX;
+                    const height = endY - this.shapeStartY;
+
+                    if (Math.abs(width) > 5 || Math.abs(height) > 5) {
+                        const color = document.getElementById('shapeColor').value;
+                        this.shapes.push({
+                            type: this.currentDrawTool,
+                            x: this.shapeStartX,
+                            y: this.shapeStartY,
+                            width: width,
+                            height: height,
+                            color: color,
+                            filled: this.shapeFillMode
+                        });
+                        this.saveToLocalStorage();
+                    }
+
+                    this.isDrawingShape = false;
+                    this.render();
+                    return;
+                }
+
                 if (this.mode === 'select' && this.isDrawing) {
                     this.isDrawing = false;
                     this.selectSeatsInLasso();
@@ -877,14 +996,14 @@
                 let minX = startX, maxX = startX, minY = startY, maxY = startY;
 
                 if (orientation === 'horizontal') {
-                    maxX = startX + (numSeats - 1) * seatSpacing + seatSize / 2;
+                    maxX = startX + (numSeats - 1) * (seatSize + seatSpacing) + seatSize / 2;
                     minX = startX - seatSize / 2;
-                    maxY = startY + (numRows - 1) * rowSpacing + seatSize / 2;
+                    maxY = startY + (numRows - 1) * (seatSize + rowSpacing) + seatSize / 2;
                     minY = startY - seatSize / 2;
                 } else {
-                    maxX = startX + (numRows - 1) * rowSpacing + seatSize / 2;
+                    maxX = startX + (numRows - 1) * (seatSize + rowSpacing) + seatSize / 2;
                     minX = startX - seatSize / 2;
-                    maxY = startY + (numSeats - 1) * seatSpacing + seatSize / 2;
+                    maxY = startY + (numSeats - 1) * (seatSize + seatSpacing) + seatSize / 2;
                     minY = startY - seatSize / 2;
                 }
 
@@ -905,15 +1024,17 @@
                             const rowOffset = (row1Pos === 'top') ? row : (numRows - 1 - row);
                             const seatOffset = (seat1Pos === 'left') ? seat : (numSeats - 1 - seat);
 
-                            x = startX + seatOffset * seatSpacing;
-                            y = startY + rowOffset * rowSpacing;
+                            // Abstand ist von Außenkante zu Außenkante (Platzgröße + gewünschter Abstand)
+                            x = startX + seatOffset * (seatSize + seatSpacing);
+                            y = startY + rowOffset * (seatSize + rowSpacing);
                         } else {
                             // Vertical: Reihen nebeneinander, Plätze übereinander
                             const rowOffset = (row1Pos === 'top') ? row : (numRows - 1 - row);
                             const seatOffset = (seat1Pos === 'left') ? seat : (numSeats - 1 - seat);
 
-                            x = startX + rowOffset * rowSpacing;
-                            y = startY + seatOffset * seatSpacing;
+                            // Abstand ist von Außenkante zu Außenkante (Platzgröße + gewünschter Abstand)
+                            x = startX + rowOffset * (seatSize + rowSpacing);
+                            y = startY + seatOffset * (seatSize + seatSpacing);
                         }
 
                         const actualRow = (row1Pos === 'top' || row1Pos === 'left') ? startRowNum + row : startRowNum + (numRows - 1 - row);
@@ -1019,6 +1140,31 @@
                     this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
                 }
 
+                // Draw shapes
+                this.shapes.forEach((shape, index) => {
+                    this.drawShape(shape);
+
+                    // Highlight selected shape
+                    if (index === this.selectedShape) {
+                        this.ctx.strokeStyle = '#e74c3c';
+                        this.ctx.lineWidth = 3;
+                        this.ctx.setLineDash([5, 5]);
+
+                        if (shape.type === 'rect') {
+                            this.ctx.strokeRect(shape.x - 2, shape.y - 2, shape.width + 4, shape.height + 4);
+                        } else if (shape.type === 'circle') {
+                            const radius = Math.sqrt(shape.width * shape.width + shape.height * shape.height) / 2;
+                            const centerX = shape.x + shape.width / 2;
+                            const centerY = shape.y + shape.height / 2;
+                            this.ctx.beginPath();
+                            this.ctx.arc(centerX, centerY, radius + 3, 0, Math.PI * 2);
+                            this.ctx.stroke();
+                        }
+
+                        this.ctx.setLineDash([]);
+                    }
+                });
+
                 // Draw seats
                 this.seats.forEach((seat, index) => {
                     const isSelected = this.selectedSeats.has(index);
@@ -1098,80 +1244,231 @@
                 Object.values(blockRows).forEach(rowData => {
                     if (rowData.seats.length === 0) return;
 
-                    // Calculate row position - use all seats in the row
                     const seats = rowData.seats;
-                    const minX = Math.min(...seats.map(s => s.x - s.size / 2));
-                    const maxX = Math.max(...seats.map(s => s.x + s.size / 2));
-                    const minY = Math.min(...seats.map(s => s.y - s.size / 2));
-                    const maxY = Math.max(...seats.map(s => s.y + s.size / 2));
-                    const avgX = seats.reduce((sum, s) => sum + s.x, 0) / seats.length;
-                    const avgY = seats.reduce((sum, s) => sum + s.y, 0) / seats.length;
+                    if (seats.length < 1) return;
 
-                    // Determine orientation: horizontal if width > height
-                    const width = maxX - minX;
-                    const height = maxY - minY;
-                    const isHorizontal = width > height;
+                    // Sort seats by seat number to find first and last
+                    const sortedSeats = [...seats].sort((a, b) => a.seat - b.seat);
+                    const firstSeat = sortedSeats[0];
+                    const lastSeat = sortedSeats[sortedSeats.length - 1];
 
                     const label = `${rowData.row}`;
 
-                    if (isHorizontal) {
-                        // Horizontal orientation: labels left and right
-                        this.ctx.textAlign = 'right';
-                        const leftX = minX - 10;
-                        if (leftX > 0) {
-                            // Draw semi-transparent background
-                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                            const textWidth = this.ctx.measureText(label).width;
-                            this.ctx.fillRect(leftX - textWidth - 4, avgY - 10, textWidth + 8, 20);
+                    // Calculate spacing between seats if we have at least 2 seats
+                    let seatSpacingX = 0;
+                    let seatSpacingY = 0;
 
-                            // Draw text
-                            this.ctx.fillStyle = '#333';
-                            this.ctx.fillText(label, leftX, avgY);
-                        }
+                    if (seats.length >= 2) {
+                        // Calculate average spacing between consecutive seats
+                        seatSpacingX = (lastSeat.x - firstSeat.x) / (seats.length - 1);
+                        seatSpacingY = (lastSeat.y - firstSeat.y) / (seats.length - 1);
+                    }
 
-                        this.ctx.textAlign = 'left';
-                        const rightX = maxX + 10;
-                        if (rightX < this.canvas.width) {
-                            // Draw semi-transparent background
-                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                            const textWidth = this.ctx.measureText(label).width;
-                            this.ctx.fillRect(rightX - 4, avgY - 10, textWidth + 8, 20);
+                    // Position labels as if they were seats before first and after last
+                    // Left label: one seat position before the first seat
+                    const labelLeftX = firstSeat.x - seatSpacingX * 1.2;
+                    const labelLeftY = firstSeat.y - seatSpacingY * 1.2;
 
-                            // Draw text
-                            this.ctx.fillStyle = '#333';
-                            this.ctx.fillText(label, rightX, avgY);
-                        }
-                    } else {
-                        // Vertical orientation: labels top and bottom
+                    if (labelLeftX > 10 && labelLeftX < this.canvas.width - 10 &&
+                        labelLeftY > 15 && labelLeftY < this.canvas.height - 15) {
+
+                        this.ctx.save();
+                        this.ctx.translate(labelLeftX, labelLeftY);
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        const textWidth = this.ctx.measureText(label).width;
+                        this.ctx.fillRect(-textWidth / 2 - 4, -10, textWidth + 8, 20);
+                        this.ctx.fillStyle = '#333';
                         this.ctx.textAlign = 'center';
+                        this.ctx.fillText(label, 0, 0);
+                        this.ctx.restore();
+                    }
 
-                        // Draw label on top
-                        const topY = minY - 10;
-                        if (topY > 15) {
-                            // Draw semi-transparent background
-                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                            const textWidth = this.ctx.measureText(label).width;
-                            this.ctx.fillRect(avgX - textWidth / 2 - 4, topY - 10, textWidth + 8, 20);
+                    // Right label: one seat position after the last seat
+                    const labelRightX = lastSeat.x + seatSpacingX * 1.2;
+                    const labelRightY = lastSeat.y + seatSpacingY * 1.2;
 
-                            // Draw text
-                            this.ctx.fillStyle = '#333';
-                            this.ctx.fillText(label, avgX, topY);
-                        }
+                    if (labelRightX > 10 && labelRightX < this.canvas.width - 10 &&
+                        labelRightY > 15 && labelRightY < this.canvas.height - 15) {
 
-                        // Draw label on bottom
-                        const bottomY = maxY + 10;
-                        if (bottomY < this.canvas.height - 5) {
-                            // Draw semi-transparent background
-                            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                            const textWidth = this.ctx.measureText(label).width;
-                            this.ctx.fillRect(avgX - textWidth / 2 - 4, bottomY - 10, textWidth + 8, 20);
-
-                            // Draw text
-                            this.ctx.fillStyle = '#333';
-                            this.ctx.fillText(label, avgX, bottomY);
-                        }
+                        this.ctx.save();
+                        this.ctx.translate(labelRightX, labelRightY);
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        const textWidth = this.ctx.measureText(label).width;
+                        this.ctx.fillRect(-textWidth / 2 - 4, -10, textWidth + 8, 20);
+                        this.ctx.fillStyle = '#333';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillText(label, 0, 0);
+                        this.ctx.restore();
                     }
                 });
+            }
+
+            setDrawMode(tool) {
+                this.currentDrawTool = tool;
+                this.mode = null;
+                this.selectedSeats.clear();
+                this.selectedShape = null;
+                document.getElementById('modeIndicator').textContent = `Modus: ${tool === 'rect' ? 'Rechteck' : tool === 'circle' ? 'Kreis' : tool === 'line' ? 'Linie' : 'Dreieck'} zeichnen`;
+                this.render();
+            }
+
+            drawShape(shape) {
+                this.ctx.strokeStyle = shape.color;
+                this.ctx.fillStyle = shape.color;
+                this.ctx.lineWidth = 3;
+
+                if (shape.type === 'rect') {
+                    if (shape.filled) {
+                        this.ctx.fillRect(shape.x, shape.y, shape.width, shape.height);
+                    } else {
+                        this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+                    }
+                } else if (shape.type === 'circle') {
+                    const radius = Math.sqrt(shape.width * shape.width + shape.height * shape.height) / 2;
+                    const centerX = shape.x + shape.width / 2;
+                    const centerY = shape.y + shape.height / 2;
+                    this.ctx.beginPath();
+                    this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    if (shape.filled) {
+                        this.ctx.fill();
+                    } else {
+                        this.ctx.stroke();
+                    }
+                } else if (shape.type === 'line') {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(shape.x, shape.y);
+                    this.ctx.lineTo(shape.x + shape.width, shape.y + shape.height);
+                    this.ctx.stroke();
+                } else if (shape.type === 'triangle') {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(shape.x + shape.width / 2, shape.y);
+                    this.ctx.lineTo(shape.x, shape.y + shape.height);
+                    this.ctx.lineTo(shape.x + shape.width, shape.y + shape.height);
+                    this.ctx.closePath();
+                    if (shape.filled) {
+                        this.ctx.fill();
+                    } else {
+                        this.ctx.stroke();
+                    }
+                }
+            }
+
+            drawShapePreview(x1, y1, x2, y2) {
+                const color = document.getElementById('shapeColor').value;
+                this.ctx.strokeStyle = color;
+                this.ctx.fillStyle = color;
+                this.ctx.lineWidth = 3;
+                this.ctx.globalAlpha = 0.5;
+
+                const width = x2 - x1;
+                const height = y2 - y1;
+
+                if (this.currentDrawTool === 'rect') {
+                    if (this.shapeFillMode) {
+                        this.ctx.fillRect(x1, y1, width, height);
+                    } else {
+                        this.ctx.strokeRect(x1, y1, width, height);
+                    }
+                } else if (this.currentDrawTool === 'circle') {
+                    const radius = Math.sqrt(width * width + height * height) / 2;
+                    const centerX = x1 + width / 2;
+                    const centerY = y1 + height / 2;
+                    this.ctx.beginPath();
+                    this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                    if (this.shapeFillMode) {
+                        this.ctx.fill();
+                    } else {
+                        this.ctx.stroke();
+                    }
+                } else if (this.currentDrawTool === 'line') {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x1, y1);
+                    this.ctx.lineTo(x2, y2);
+                    this.ctx.stroke();
+                } else if (this.currentDrawTool === 'triangle') {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x1 + width / 2, y1);
+                    this.ctx.lineTo(x1, y1 + height);
+                    this.ctx.lineTo(x1 + width, y1 + height);
+                    this.ctx.closePath();
+                    if (this.shapeFillMode) {
+                        this.ctx.fill();
+                    } else {
+                        this.ctx.stroke();
+                    }
+                }
+
+                this.ctx.globalAlpha = 1.0;
+            }
+
+            toggleFillMode() {
+                this.shapeFillMode = !this.shapeFillMode;
+                const btn = document.getElementById('fillModeBtn');
+                if (this.shapeFillMode) {
+                    btn.classList.add('btn-success');
+                } else {
+                    btn.classList.remove('btn-success');
+                }
+            }
+
+            isPointInShape(x, y, shape) {
+                if (shape.type === 'rect') {
+                    return x >= shape.x && x <= shape.x + shape.width &&
+                           y >= shape.y && y <= shape.y + shape.height;
+                } else if (shape.type === 'circle') {
+                    const centerX = shape.x + shape.width / 2;
+                    const centerY = shape.y + shape.height / 2;
+                    const radius = Math.sqrt(shape.width * shape.width + shape.height * shape.height) / 2;
+                    const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+                    return distance <= radius;
+                } else if (shape.type === 'triangle') {
+                    return x >= shape.x && x <= shape.x + shape.width &&
+                           y >= shape.y && y <= shape.y + shape.height;
+                } else if (shape.type === 'line') {
+                    const dist = this.distanceToLine(x, y, shape.x, shape.y,
+                        shape.x + shape.width, shape.y + shape.height);
+                    return dist < 10;
+                }
+                return false;
+            }
+
+            distanceToLine(px, py, x1, y1, x2, y2) {
+                const A = px - x1;
+                const B = py - y1;
+                const C = x2 - x1;
+                const D = y2 - y1;
+                const dot = A * C + B * D;
+                const lenSq = C * C + D * D;
+                const param = lenSq !== 0 ? dot / lenSq : -1;
+
+                let xx, yy;
+                if (param < 0) {
+                    xx = x1;
+                    yy = y1;
+                } else if (param > 1) {
+                    xx = x2;
+                    yy = y2;
+                } else {
+                    xx = x1 + param * C;
+                    yy = y1 + param * D;
+                }
+
+                const dx = px - xx;
+                const dy = py - yy;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+            deleteSelectedShape() {
+                if (this.selectedShape !== null) {
+                    if (confirm('Form löschen?')) {
+                        this.shapes.splice(this.selectedShape, 1);
+                        this.selectedShape = null;
+                        this.render();
+                        this.saveToLocalStorage();
+                    }
+                } else {
+                    alert('Bitte wählen Sie zuerst eine Form aus.');
+                }
             }
 
             loadBackgroundImage(event) {
@@ -1199,6 +1496,7 @@
 
             setMode(mode) {
                 this.mode = mode;
+                this.currentDrawTool = null;
                 if (mode !== 'move' && mode !== 'select') {
                     this.selectedSeats.clear();
                 }
@@ -1230,6 +1528,27 @@
 
                 this.render();
                 this.updateStats();
+            }
+
+            openRotateModal() {
+                if (this.selectedSeats.size === 0) {
+                    alert('Bitte wählen Sie zunächst Plätze aus.');
+                    return;
+                }
+                document.getElementById('rotateModal').classList.add('active');
+            }
+
+            closeRotateModal() {
+                const modal = document.getElementById('rotateModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+
+            applyRotation() {
+                const angle = parseFloat(document.getElementById('rotationAngle').value);
+                this.rotateSelected(angle);
+                this.closeRotateModal();
             }
 
             rotateSelected(angle) {
@@ -1439,12 +1758,14 @@
             }
 
             clearCanvas() {
-                if (this.seats.length === 0) return;
+                if (this.seats.length === 0 && this.shapes.length === 0) return;
 
-                if (confirm('Möchten Sie wirklich alle Plätze löschen?')) {
+                if (confirm('Möchten Sie wirklich alle Plätze und Formen löschen?')) {
                     this.saveState();
                     this.seats = [];
+                    this.shapes = [];
                     this.selectedSeats.clear();
+                    this.selectedShape = null;
                     this.render();
                     this.updateStats();
                     this.saveToLocalStorage();
