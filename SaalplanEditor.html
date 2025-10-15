@@ -139,6 +139,17 @@
             transform: none;
         }
 
+        button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        button.active:hover {
+            background: #5568d3;
+            border-color: #5568d3;
+        }
+
         button svg {
             width: 18px;
             height: 18px;
@@ -426,16 +437,16 @@
             <div class="button-separator"></div>
 
             <!-- Zeichnen -->
-            <button onclick="editor.setDrawMode('rect')" title="Rechteck zeichnen">
+            <button id="btnRect" onclick="editor.toggleDrawMode('rect')" title="Rechteck zeichnen">
                 <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm16 16V5H5v14h14z"/></svg>
             </button>
-            <button onclick="editor.setDrawMode('circle')" title="Kreis zeichnen">
+            <button id="btnCircle" onclick="editor.toggleDrawMode('circle')" title="Kreis zeichnen">
                 <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
             </button>
-            <button onclick="editor.setDrawMode('line')" title="Linie zeichnen">
+            <button id="btnLine" onclick="editor.toggleDrawMode('line')" title="Linie zeichnen">
                 <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
             </button>
-            <button onclick="editor.setDrawMode('triangle')" title="Dreieck zeichnen">
+            <button id="btnTriangle" onclick="editor.toggleDrawMode('triangle')" title="Dreieck zeichnen">
                 <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99z"/></svg>
             </button>
             <input type="color" id="shapeColor" value="#3498db" title="Zeichenfarbe" style="width: 32px; height: 32px; padding: 2px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">
@@ -1303,13 +1314,45 @@
                 });
             }
 
-            setDrawMode(tool) {
-                this.currentDrawTool = tool;
-                this.mode = null;
-                this.selectedSeats.clear();
-                this.selectedShape = null;
-                document.getElementById('modeIndicator').textContent = `Modus: ${tool === 'rect' ? 'Rechteck' : tool === 'circle' ? 'Kreis' : tool === 'line' ? 'Linie' : 'Dreieck'} zeichnen`;
+            toggleDrawMode(tool) {
+                // Clear all draw button active states
+                document.getElementById('btnRect').classList.remove('active');
+                document.getElementById('btnCircle').classList.remove('active');
+                document.getElementById('btnLine').classList.remove('active');
+                document.getElementById('btnTriangle').classList.remove('active');
+
+                // If clicking the same tool, deactivate it
+                if (this.currentDrawTool === tool) {
+                    this.currentDrawTool = null;
+                    this.mode = 'info';
+                    this.selectedShape = null;
+                    document.getElementById('modeIndicator').textContent = 'Modus: Info anzeigen (Klicken Sie auf einen Platz)';
+                    this.canvas.style.cursor = 'help';
+                } else {
+                    // Activate the selected tool
+                    this.currentDrawTool = tool;
+                    this.mode = null;
+                    this.selectedSeats.clear();
+                    this.selectedShape = null;
+
+                    // Add active class to the clicked button
+                    const buttonId = tool === 'rect' ? 'btnRect' :
+                                   tool === 'circle' ? 'btnCircle' :
+                                   tool === 'line' ? 'btnLine' : 'btnTriangle';
+                    document.getElementById(buttonId).classList.add('active');
+
+                    const toolName = tool === 'rect' ? 'Rechteck' :
+                                   tool === 'circle' ? 'Kreis' :
+                                   tool === 'line' ? 'Linie' : 'Dreieck';
+                    document.getElementById('modeIndicator').textContent = `Modus: ${toolName} zeichnen`;
+                }
+
                 this.render();
+            }
+
+            setDrawMode(tool) {
+                // Keep for backward compatibility, but use toggleDrawMode instead
+                this.toggleDrawMode(tool);
             }
 
             drawShape(shape) {
@@ -1497,6 +1540,13 @@
             setMode(mode) {
                 this.mode = mode;
                 this.currentDrawTool = null;
+
+                // Clear all draw button active states when switching to another mode
+                document.getElementById('btnRect').classList.remove('active');
+                document.getElementById('btnCircle').classList.remove('active');
+                document.getElementById('btnLine').classList.remove('active');
+                document.getElementById('btnTriangle').classList.remove('active');
+
                 if (mode !== 'move' && mode !== 'select') {
                     this.selectedSeats.clear();
                 }
