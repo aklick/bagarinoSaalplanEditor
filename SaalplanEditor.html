@@ -433,6 +433,9 @@
             <button onclick="editor.setMode('info')" title="Info anzeigen">
                 <svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2V7zm0 4h2v6h-2v-6zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
             </button>
+            <button onclick="editor.setMode('selectShape')" class="btn-secondary" title="Formen auswählen">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </button>
 
             <div class="button-separator"></div>
 
@@ -448,6 +451,9 @@
             </button>
             <button id="btnTriangle" onclick="editor.toggleDrawMode('triangle')" title="Dreieck zeichnen">
                 <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99z"/></svg>
+            </button>
+            <button id="btnText" onclick="editor.toggleDrawMode('text')" title="Text hinzufügen">
+                <svg viewBox="0 0 24 24"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>
             </button>
             <input type="color" id="shapeColor" value="#3498db" title="Zeichenfarbe" style="width: 32px; height: 32px; padding: 2px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer;">
             <button id="fillModeBtn" onclick="editor.toggleFillMode()" title="Füllung umschalten">
@@ -594,6 +600,28 @@
             <div class="modal-footer">
                 <button onclick="editor.closeSettingsModal()" class="btn-secondary">Abbrechen</button>
                 <button onclick="editor.applySettings()" class="btn-success">Übernehmen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal für Texteingabe -->
+    <div id="textModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Text hinzufügen</h3>
+                <button class="modal-close" onclick="editor.closeTextModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Text</label>
+                <input type="text" id="textInput" placeholder="Text eingeben..." />
+            </div>
+            <div class="form-group">
+                <label>Schriftgröße (px)</label>
+                <input type="number" id="textSize" value="20" min="10" max="100" />
+            </div>
+            <div class="modal-footer">
+                <button onclick="editor.closeTextModal()" class="btn-secondary">Abbrechen</button>
+                <button onclick="editor.confirmTextInput()" class="btn-success">OK</button>
             </div>
         </div>
     </div>
@@ -795,7 +823,26 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
 
-                if (this.currentDrawTool) {
+                if (this.mode === 'selectShape') {
+                    // Check if clicking on existing shape for selection/dragging
+                    let shapeClicked = false;
+                    for (let i = this.shapes.length - 1; i >= 0; i--) {
+                        if (this.isPointInShape(x, y, this.shapes[i])) {
+                            this.selectedShape = i;
+                            this.isDraggingShape = true;
+                            this.shapeDragOffsetX = x - this.shapes[i].x;
+                            this.shapeDragOffsetY = y - this.shapes[i].y;
+                            shapeClicked = true;
+                            this.render();
+                            return;
+                        }
+                    }
+                    // If no shape was clicked, deselect
+                    if (!shapeClicked) {
+                        this.selectedShape = null;
+                        this.render();
+                    }
+                } else if (this.currentDrawTool) {
                     // Check if clicking on existing shape for selection/dragging
                     this.selectedShape = null;
                     for (let i = this.shapes.length - 1; i >= 0; i--) {
@@ -808,6 +855,15 @@
                             return;
                         }
                     }
+
+                    // Handle text tool separately - open modal instead of drawing
+                    if (this.currentDrawTool === 'text') {
+                        this.pendingTextX = x;
+                        this.pendingTextY = y;
+                        this.openTextModal();
+                        return;
+                    }
+
                     // Start drawing new shape
                     this.isDrawingShape = true;
                     this.shapeStartX = x;
@@ -874,6 +930,50 @@
 
                 // Close modal
                 this.closeSettingsModal();
+            }
+
+            openTextModal() {
+                document.getElementById('textInput').value = '';
+                document.getElementById('textModal').classList.add('active');
+                // Focus input field
+                setTimeout(() => {
+                    document.getElementById('textInput').focus();
+                }, 100);
+            }
+
+            closeTextModal() {
+                const modal = document.getElementById('textModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+                this.pendingTextX = null;
+                this.pendingTextY = null;
+            }
+
+            confirmTextInput() {
+                const text = document.getElementById('textInput').value.trim();
+                const size = parseInt(document.getElementById('textSize').value);
+
+                if (!text) {
+                    alert('Bitte geben Sie einen Text ein.');
+                    return;
+                }
+
+                if (this.pendingTextX !== null && this.pendingTextY !== null) {
+                    const color = document.getElementById('shapeColor').value;
+                    this.shapes.push({
+                        type: 'text',
+                        x: this.pendingTextX,
+                        y: this.pendingTextY,
+                        text: text,
+                        size: size,
+                        color: color
+                    });
+                    this.saveToLocalStorage();
+                    this.render();
+                }
+
+                this.closeTextModal();
             }
 
             openAddSeatsModal() {
@@ -1161,7 +1261,12 @@
                         this.ctx.lineWidth = 3;
                         this.ctx.setLineDash([5, 5]);
 
-                        if (shape.type === 'rect') {
+                        if (shape.type === 'text') {
+                            this.ctx.font = `${shape.size}px Arial`;
+                            const textWidth = this.ctx.measureText(shape.text).width;
+                            const textHeight = shape.size;
+                            this.ctx.strokeRect(shape.x - 2, shape.y - 2, textWidth + 4, textHeight + 4);
+                        } else if (shape.type === 'rect') {
                             this.ctx.strokeRect(shape.x - 2, shape.y - 2, shape.width + 4, shape.height + 4);
                         } else if (shape.type === 'circle') {
                             const radius = Math.sqrt(shape.width * shape.width + shape.height * shape.height) / 2;
@@ -1320,6 +1425,7 @@
                 document.getElementById('btnCircle').classList.remove('active');
                 document.getElementById('btnLine').classList.remove('active');
                 document.getElementById('btnTriangle').classList.remove('active');
+                document.getElementById('btnText').classList.remove('active');
 
                 // If clicking the same tool, deactivate it
                 if (this.currentDrawTool === tool) {
@@ -1338,13 +1444,15 @@
                     // Add active class to the clicked button
                     const buttonId = tool === 'rect' ? 'btnRect' :
                                    tool === 'circle' ? 'btnCircle' :
-                                   tool === 'line' ? 'btnLine' : 'btnTriangle';
+                                   tool === 'line' ? 'btnLine' :
+                                   tool === 'triangle' ? 'btnTriangle' : 'btnText';
                     document.getElementById(buttonId).classList.add('active');
 
                     const toolName = tool === 'rect' ? 'Rechteck' :
                                    tool === 'circle' ? 'Kreis' :
-                                   tool === 'line' ? 'Linie' : 'Dreieck';
-                    document.getElementById('modeIndicator').textContent = `Modus: ${toolName} zeichnen`;
+                                   tool === 'line' ? 'Linie' :
+                                   tool === 'triangle' ? 'Dreieck' : 'Text';
+                    document.getElementById('modeIndicator').textContent = `Modus: ${toolName} ${tool === 'text' ? 'hinzufügen' : 'zeichnen'}`;
                 }
 
                 this.render();
@@ -1360,7 +1468,12 @@
                 this.ctx.fillStyle = shape.color;
                 this.ctx.lineWidth = 3;
 
-                if (shape.type === 'rect') {
+                if (shape.type === 'text') {
+                    this.ctx.font = `${shape.size}px Arial`;
+                    this.ctx.textAlign = 'left';
+                    this.ctx.textBaseline = 'top';
+                    this.ctx.fillText(shape.text, shape.x, shape.y);
+                } else if (shape.type === 'rect') {
                     if (shape.filled) {
                         this.ctx.fillRect(shape.x, shape.y, shape.width, shape.height);
                     } else {
@@ -1455,7 +1568,14 @@
             }
 
             isPointInShape(x, y, shape) {
-                if (shape.type === 'rect') {
+                if (shape.type === 'text') {
+                    // Estimate text bounding box
+                    this.ctx.font = `${shape.size}px Arial`;
+                    const textWidth = this.ctx.measureText(shape.text).width;
+                    const textHeight = shape.size;
+                    return x >= shape.x && x <= shape.x + textWidth &&
+                           y >= shape.y && y <= shape.y + textHeight;
+                } else if (shape.type === 'rect') {
                     return x >= shape.x && x <= shape.x + shape.width &&
                            y >= shape.y && y <= shape.y + shape.height;
                 } else if (shape.type === 'circle') {
@@ -1546,9 +1666,13 @@
                 document.getElementById('btnCircle').classList.remove('active');
                 document.getElementById('btnLine').classList.remove('active');
                 document.getElementById('btnTriangle').classList.remove('active');
+                document.getElementById('btnText').classList.remove('active');
 
                 if (mode !== 'move' && mode !== 'select') {
                     this.selectedSeats.clear();
+                }
+                if (mode !== 'selectShape') {
+                    this.selectedShape = null;
                 }
                 const indicator = document.getElementById('modeIndicator');
                 const selectionActions = document.getElementById('selectionActions');
@@ -1563,6 +1687,11 @@
                         indicator.textContent = 'Modus: Plätze auswählen (Lasso ziehen oder einzeln klicken)';
                         this.canvas.style.cursor = 'pointer';
                         selectionActions.style.display = 'flex';
+                        break;
+                    case 'selectShape':
+                        indicator.textContent = 'Modus: Formen auswählen (Klicken Sie auf eine Form zum Auswählen und Verschieben)';
+                        this.canvas.style.cursor = 'pointer';
+                        selectionActions.style.display = 'none';
                         break;
                     case 'move':
                         indicator.textContent = 'Modus: Plätze verschieben (Ziehen Sie die ausgewählten Plätze)';
